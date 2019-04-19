@@ -7,7 +7,7 @@ import (
 )
 
 func IsEmpty(s string) bool {
-	return strings.Trim(s, " ") == ""
+	return len(s) == 0
 }
 
 func IsURI(s string) bool {
