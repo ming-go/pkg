@@ -35,6 +35,10 @@ func (m *MTime) LastNDay(n time.Duration) time.Time {
 	return m.time.Add(-1 * SecondsPerDay * n)
 }
 
+func ParseRFC3339(s string) time.Time {
+	return time.Parse(time.RFC3339, s)
+}
+
 //LastNDayNormalizationByWeekday -
 //func LastNDayNormalizationByWeekday(n int) time.Time {
 //	d := time.Duration((SecondsPerDay * time.Duration(((t.Weekday() + 7) % 8))))
