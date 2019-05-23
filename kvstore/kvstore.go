@@ -13,49 +13,49 @@ var (
 	ErrTypeError = errors.New("Type error")
 )
 
-type kvstore struct {
+type KVStore struct {
 	sm *sync.Map
 }
 
-func NewKVStore() *kvstore {
-	return &kvstore{
+func NewKVStore() *KVStore {
+	return &KVStore{
 		sm: new(sync.Map),
 	}
 }
 
-func (kvs *kvstore) get(k string) (interface{}, bool) {
+func (kvs *KVStore) get(k string) (interface{}, bool) {
 	return kvs.sm.Load(k)
 }
 
-func (kvs *kvstore) set(k string, v interface{}) {
+func (kvs *KVStore) set(k string, v interface{}) {
 	kvs.sm.Store(k, v)
 }
 
-func (kvs *kvstore) Get(k string) (interface{}, bool) {
+func (kvs *KVStore) Get(k string) (interface{}, bool) {
 	return kvs.get(k)
 }
 
-func (kvs *kvstore) Set(k string, v interface{}) {
+func (kvs *KVStore) Set(k string, v interface{}) {
 	kvs.set(k, v)
 }
 
-func (kvs *kvstore) del(k string) {
+func (kvs *KVStore) del(k string) {
 	kvs.sm.Delete(k)
 }
 
-func (kvs *kvstore) Del(k string) {
+func (kvs *KVStore) Del(k string) {
 	kvs.del(k)
 }
 
-func (kvs *kvstore) setBytes(k string, v []byte) {
+func (kvs *KVStore) setBytes(k string, v []byte) {
 	kvs.sm.Store(k, v)
 }
 
-func (kvs *kvstore) SetBytes(k string, v []byte) {
+func (kvs *KVStore) SetBytes(k string, v []byte) {
 	kvs.setBytes(k, v)
 }
 
-func (kvs *kvstore) getBytes(k string) ([]byte, error) {
+func (kvs *KVStore) getBytes(k string) ([]byte, error) {
 	if v, ok := kvs.sm.Load(k); ok == true {
 		switch v := v.(type) {
 		case []byte:
@@ -68,15 +68,15 @@ func (kvs *kvstore) getBytes(k string) ([]byte, error) {
 	return nil, ErrNotExists
 }
 
-func (kvs *kvstore) GetBytes(k string) ([]byte, error) {
+func (kvs *KVStore) GetBytes(k string) ([]byte, error) {
 	return kvs.getBytes(k)
 }
 
-func (kvs *kvstore) SetString(k string, v string) {
+func (kvs *KVStore) SetString(k string, v string) {
 	kvs.set(k, v)
 }
 
-func (kvs *kvstore) GetString(k string) (string, error) {
+func (kvs *KVStore) GetString(k string) (string, error) {
 	if v, exists := kvs.get(k); exists {
 		s, err := cast.ToStringE(v)
 		if err != nil {
@@ -89,7 +89,7 @@ func (kvs *kvstore) GetString(k string) (string, error) {
 	return "", ErrNotExists
 }
 
-func (kvs *kvstore) SetBoolWithPB(k string, v bool) error {
+func (kvs *KVStore) SetBoolWithPB(k string, v bool) error {
 	p := pbKV.Bool{
 		V: v,
 	}
@@ -104,7 +104,7 @@ func (kvs *kvstore) SetBoolWithPB(k string, v bool) error {
 	return nil
 }
 
-func (kvs *kvstore) GetBoolWithPB(k string) (bool, error) {
+func (kvs *KVStore) GetBoolWithPB(k string) (bool, error) {
 	if b, exists := kvs.get(k); exists {
 		pbB := pbKV.Bool{}
 		switch b := b.(type) {
@@ -122,11 +122,11 @@ func (kvs *kvstore) GetBoolWithPB(k string) (bool, error) {
 	return false, ErrNotExists
 }
 
-func (kvs *kvstore) SetBool(k string, v bool) {
+func (kvs *KVStore) SetBool(k string, v bool) {
 	kvs.set(k, v)
 }
 
-func (kvs *kvstore) GetBool(k string) (bool, error) {
+func (kvs *KVStore) GetBool(k string) (bool, error) {
 	if v, exists := kvs.get(k); exists {
 		return cast.ToBoolE(v)
 	}
