@@ -32,11 +32,11 @@ func (kvs *kvstore) set(k string, v interface{}) {
 }
 
 func (kvs *kvstore) Get(k string) (interface{}, bool) {
-	return get(k)
+	return kvs.get(k)
 }
 
 func (kvs *kvstore) Set(k string, v interface{}) {
-	set(k, v)
+	kvs.set(k, v)
 }
 
 func (kvs *kvstore) del(k string) {
