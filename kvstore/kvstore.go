@@ -51,15 +51,25 @@ func (kvs *kvstore) setBytes(k string, v []byte) {
 	kvs.sm.Store(k, v)
 }
 
-func (kvs *kvstore) getBytes(k string) ([]byte, bool) {
+func (kvs *kvstore) SetBytes(k string, v []byte) {
+	kvs.setBytes(k, v)
+}
+
+func (kvs *kvstore) getBytes(k string) ([]byte, error) {
 	if v, ok := kvs.sm.Load(k); ok == true {
 		switch v := v.(type) {
 		case []byte:
-			return v, true
+			return v, nil
+		default:
+			return nil, ErrTypeError
 		}
 	}
 
-	return nil, false
+	return nil, ErrNotExists
+}
+
+func (kvs *kvstore) GetBytes(k string) ([]byte, error) {
+	return kvs.getBytes(k)
 }
 
 func (kvs *kvstore) SetString(k string, v string) {
