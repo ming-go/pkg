@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package kvstore;
+
+message Int32 {
+	int32 v = 1;
+}
+
+message Int64 {
+	int64 v = 1;
+}
+
+message UInt32 {
+	uint32 v = 1;
+}
+
+message UInt64 {
+	uint64 v = 1;
+}
+
+message Bool {
+	bool v = 1;
+}
+
+message Double {
+	double v = 1;
+}
