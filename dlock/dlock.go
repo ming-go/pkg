@@ -1,7 +1,9 @@
 package dlock
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	consulAPI "github.com/hashicorp/consul/api"
@@ -24,14 +26,20 @@ type Config struct {
 	LockWaitTime  time.Duration
 }
 
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(consulAddress string, key string) *Config {
 	return &Config{
-		TTLSecond:    10,
-		LockWaitTime: 1000 * time.Millisecond,
+		ConsulAddress: consulAddress,
+		Key:           defaultKeyPrefix + key,
+		TTLSecond:     10,
+		LockWaitTime:  1 * time.Second,
 	}
 }
 
 func NewDLock(config *Config) (*DLock, error) {
+	if strings.Trim(config.Key, " ") == "" {
+		return nil, errors.New("The Key is required")
+	}
+
 	consulDefaultConfig := consulAPI.DefaultConfig()
 	consulDefaultConfig.Address = config.ConsulAddress
 
@@ -44,14 +52,14 @@ func NewDLock(config *Config) (*DLock, error) {
 		config.TTLSecond = 10
 	}
 
-	if lockWaitTime <= 10*time.Millisecond {
+	if config.LockWaitTime <= 10*time.Millisecond {
 		config.LockWaitTime = 1 * time.Second
 	}
 
 	lock, err := client.LockOpts(
 		&consulAPI.LockOptions{
-			Key:          defaultKeyPrefix + config.Key,
-			SessionTTL:   strconv.Itoa(ttlSecond) + "s",
+			Key:          config.Key,
+			SessionTTL:   strconv.Itoa(config.TTLSecond) + "s",
 			LockWaitTime: config.LockWaitTime,
 		},
 	)
