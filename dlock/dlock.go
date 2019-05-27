@@ -2,12 +2,17 @@ package dlock
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	consulAPI "github.com/hashicorp/consul/api"
 )
+
+var httpClientOnce sync.Once
+var httpClient *http.Client
 
 const defaultKeyPrefix = "dLock/"
 
@@ -35,6 +40,19 @@ func NewDefaultConfig(consulAddress string, key string) *Config {
 	}
 }
 
+func getHTTPClient() *http.Client {
+	httpClientOnce.Do(func() {
+		cfg := consulAPI.DefaultConfig()
+		cfg.Transport.DisableKeepAlives = false
+		cfg.Transport.MaxIdleConnsPerHost = 128
+		consulAPI.NewClient(cfg)
+
+		httpClient = cfg.HttpClient
+	})
+
+	return httpClient
+}
+
 func NewDLock(config *Config) (*DLock, error) {
 	if strings.Trim(config.Key, " ") == "" {
 		return nil, errors.New("The Key is required")
@@ -42,6 +60,7 @@ func NewDLock(config *Config) (*DLock, error) {
 
 	consulDefaultConfig := consulAPI.DefaultConfig()
 	consulDefaultConfig.Address = config.ConsulAddress
+	consulDefaultConfig.HttpClient = getHTTPClient()
 
 	client, err := consulAPI.NewClient(consulDefaultConfig)
 	if err != nil {
