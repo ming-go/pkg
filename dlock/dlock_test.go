@@ -7,15 +7,16 @@ import (
 	"time"
 )
 
-const consulAddress = "172.77.0.66:8500"
+const worker = 5000
+const consulAddress = "172.77.0.22:8500"
 
 func TestLock(t *testing.T) {
 	var wg sync.WaitGroup
 
-	key := "dLockTestKey"
+	key := "dLockTestKey1234567"
 
-	wg.Add(1000)
-	for i := 0; i < 1000; i++ {
+	wg.Add(worker)
+	for i := 0; i < worker; i++ {
 		go func(id int) {
 			defer wg.Done()
 			cfg := NewDefaultConfig(consulAddress, key)
@@ -40,33 +41,8 @@ func TestLock(t *testing.T) {
 
 			log.Println(id, "Get lock")
 
-			<-time.After(15 * time.Second)
+			<-time.After(1000 * time.Second)
 		}(i)
 	}
 	wg.Wait()
 }
-
-//func TestLock2(t *testing.T) {
-//	dLock, err := NewDLock(consulAddress, "testtLockorg", 15000)
-//	if err != nil {
-//		t.Error(err)
-//	}
-//
-//	locked, err := dLock.Lock()
-//	if err != nil {
-//		t.Error(err)
-//	}
-//
-//	if locked {
-//		for {
-//			if dLock.IsHeld() {
-//				fmt.Println(true)
-//			} else {
-//				fmt.Println(false)
-//				break
-//			}
-//
-//			<-time.After(time.Second * 1)
-//		}
-//	}
-//}

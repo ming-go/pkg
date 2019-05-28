@@ -25,26 +25,32 @@ type DLock struct {
 }
 
 type Config struct {
-	ConsulAddress string
-	Key           string
-	TTLSecond     int
-	LockWaitTime  time.Duration
+	ConsulAddress  string
+	Key            string
+	TTLSecond      int
+	LockWaitTime   time.Duration
+	LockTryOnce    bool
+	MonitorRetries int
 }
 
 func NewDefaultConfig(consulAddress string, key string) *Config {
 	return &Config{
-		ConsulAddress: consulAddress,
-		Key:           defaultKeyPrefix + key,
-		TTLSecond:     10,
-		LockWaitTime:  1 * time.Second,
+		ConsulAddress:  consulAddress,
+		Key:            defaultKeyPrefix + key,
+		TTLSecond:      10,
+		LockWaitTime:   1 * time.Second,
+		LockTryOnce:    true,
+		MonitorRetries: 3,
 	}
 }
 
 func getHTTPClient() *http.Client {
 	httpClientOnce.Do(func() {
 		cfg := consulAPI.DefaultConfig()
-		cfg.Transport.DisableKeepAlives = false
-		cfg.Transport.MaxIdleConnsPerHost = 128
+		//cfg.Transport.DisableKeepAlives = false
+		//cfg.Transport.MaxIdleConns = 1024
+		//cfg.Transport.MaxIdleConnsPerHost = -1
+		//cfg.Transport.IdleConnTimeout = 1 * time.Hour
 		consulAPI.NewClient(cfg)
 
 		httpClient = cfg.HttpClient
@@ -60,7 +66,7 @@ func NewDLock(config *Config) (*DLock, error) {
 
 	consulDefaultConfig := consulAPI.DefaultConfig()
 	consulDefaultConfig.Address = config.ConsulAddress
-	consulDefaultConfig.HttpClient = getHTTPClient()
+	//consulDefaultConfig.HttpClient = getHTTPClient()
 
 	client, err := consulAPI.NewClient(consulDefaultConfig)
 	if err != nil {
@@ -80,6 +86,7 @@ func NewDLock(config *Config) (*DLock, error) {
 			Key:          config.Key,
 			SessionTTL:   strconv.Itoa(config.TTLSecond) + "s",
 			LockWaitTime: config.LockWaitTime,
+			LockTryOnce:  config.LockTryOnce,
 		},
 	)
 	if err != nil {
