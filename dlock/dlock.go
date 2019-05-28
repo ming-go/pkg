@@ -18,29 +18,30 @@ const defaultKeyPrefix = "dLock/"
 
 type DLock struct {
 	client *consulAPI.Client
-	//key    string
-	//ttl    time.Duration
+	cfg    *Config
 	cLock  *consulAPI.Lock
 	isHeld bool
 }
 
 type Config struct {
-	ConsulAddress  string
-	Key            string
-	TTLSecond      int
-	LockWaitTime   time.Duration
-	LockTryOnce    bool
-	MonitorRetries int
+	ConsulAddress    string
+	Key              string
+	TTLSecond        int
+	LockWaitTime     time.Duration
+	LockTryOnce      bool
+	MonitorRetries   int
+	UnlockAndDestroy bool
 }
 
 func NewDefaultConfig(consulAddress string, key string) *Config {
 	return &Config{
-		ConsulAddress:  consulAddress,
-		Key:            defaultKeyPrefix + key,
-		TTLSecond:      10,
-		LockWaitTime:   1 * time.Second,
-		LockTryOnce:    true,
-		MonitorRetries: 3,
+		ConsulAddress:    consulAddress,
+		Key:              defaultKeyPrefix + key,
+		TTLSecond:        10,
+		LockWaitTime:     1 * time.Second,
+		LockTryOnce:      true,
+		MonitorRetries:   3,
+		UnlockAndDestroy: true,
 	}
 }
 
@@ -96,7 +97,7 @@ func NewDLock(config *Config) (*DLock, error) {
 	return &DLock{
 		client: client,
 		cLock:  lock,
-		//ttl:    time.Duration(config.TTLSecond) * time.Second,
+		cfg:    config,
 	}, nil
 }
 
@@ -134,7 +135,16 @@ func (dl *DLock) Lock() (bool, error) {
 }
 
 func (dl *DLock) Unlock() error {
-	return dl.cLock.Unlock()
+	err := dl.cLock.Unlock()
+	if err != nil {
+		return err
+	}
+
+	if dl.cfg.UnlockAndDestroy {
+		return dl.cLock.Destroy()
+	}
+
+	return nil
 }
 
 func (dl *DLock) IsHeld() bool {
