@@ -3,14 +3,34 @@ package retry
 import (
 	"fmt"
 	"time"
+
+	"github.com/ming-go/pkg/backoff"
 )
 
 type RetryableFunc func(int) (bool, error)
 
 type Retry struct {
 	Attempts    int
-	Delay       time.Duration
+	Backoff     *backoff.Backoff
 	LastErrOnly bool
+}
+
+func NewDefaultFixedBackoff() *backoff.Backoff {
+	return backoff.NewBackoff(
+		1,
+		600,
+		backoff.FixedBackoff,
+		time.Second,
+	)
+}
+
+func NewDefaultBackoffWithFullJitter() *backoff.Backoff {
+	return backoff.NewBackoff(
+		1,
+		600,
+		backoff.ExpoBackoffFullJitter,
+		time.Second,
+	)
 }
 
 func (retry *Retry) Do(retryableFunc RetryableFunc) (lastErr error) {
@@ -36,7 +56,7 @@ func (retry *Retry) Do(retryableFunc RetryableFunc) (lastErr error) {
 
 		n++
 
-		<-time.After(retry.Delay)
+		<-time.After(retry.Backoff.BackoffDuration(n))
 	}
 
 	return

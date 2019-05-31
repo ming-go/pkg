@@ -17,7 +17,7 @@ func TestRetry(t *testing.T) {
 
 	rI := &Retry{
 		Attempts:    10,
-		Delay:       1 * time.Millisecond,
+		Backoff:     NewDefaultFixedBackoff(),
 		LastErrOnly: false,
 	}
 
