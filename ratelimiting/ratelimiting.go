@@ -1,5 +1,7 @@
 package ratelimiting
 
+import "time"
+
 type RateLimiting interface {
-	Take()
+	Take() time.Time
 }

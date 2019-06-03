@@ -8,15 +8,15 @@ import (
 // Note: This file is inspired by https://github.com/uber-go/ratelimit
 
 type LeakyBucket struct {
-	perRequst time.Duration
-	waitTime  time.Duration
-	last      time.Time
-	mutex     sync.Mutex
+	perRequest time.Duration
+	waitTime   time.Duration
+	last       time.Time
+	mutex      sync.Mutex
 }
 
-func New(rate uint64, duration time.Duration) *LeakyBucket {
+func NewLeakyBucket(rate uint64, duration time.Duration) *LeakyBucket {
 	return &LeakyBucket{
-		perRequst: duration / time.Duration(rate),
+		perRequest: duration / time.Duration(rate),
 	}
 }
 
@@ -31,9 +31,7 @@ func (l *LeakyBucket) Take() time.Time {
 		return l.last
 	}
 
-	l.waitTime = l.perRequst - now.Sub(l.last)
-
-	<-time.After(l.waitTime)
+	l.waitTime = l.perRequest - now.Sub(l.last)
 
 	if l.waitTime > 0 {
 		<-time.After(l.waitTime)

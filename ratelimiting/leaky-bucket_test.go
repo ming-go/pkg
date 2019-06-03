@@ -9,7 +9,7 @@ import (
 func TestLeakyBucketTake(t *testing.T) {
 	prev := time.Now()
 
-	lb := New(10, 1*time.Second)
+	lb := NewLeakyBucket(10, 1*time.Second)
 
 	for i := 0; i < 100; i++ {
 		now := lb.Take()
