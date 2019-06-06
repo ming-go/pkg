@@ -20,7 +20,8 @@ type DLock struct {
 	client *consulAPI.Client
 	cfg    *Config
 	cLock  *consulAPI.Lock
-	isHeld bool
+	isHeld bool // TODO: matomic.Bool
+	mux    sync.RWMutex
 }
 
 type Config struct {
@@ -116,15 +117,11 @@ func (dl *DLock) lock() (bool, error) {
 	dl.isHeld = true
 
 	go func() {
-		for {
-			select {
-			case <-leaderCh:
-				dl.isHeld = false
-			default:
-			}
-
-			<-time.After(1 * time.Millisecond)
-		}
+		// TODO: Check Goroutine leaks
+		<-leaderCh
+		dl.mux.Lock()
+		dl.isHeld = false
+		dl.mux.Unlock()
 	}()
 
 	return dl.isHeld, nil
@@ -148,5 +145,7 @@ func (dl *DLock) Unlock() error {
 }
 
 func (dl *DLock) IsHeld() bool {
+	dl.mux.RLock()
+	defer dl.mux.RUnlock()
 	return dl.isHeld
 }

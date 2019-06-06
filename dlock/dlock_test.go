@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-const worker = 5000
-const consulAddress = "172.77.0.22:8500"
+const worker = 1000
+const consulAddress = "172.77.0.66:8500"
 
 func TestLock(t *testing.T) {
 	var wg sync.WaitGroup
