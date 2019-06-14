@@ -13,7 +13,6 @@ type server struct {
 	chSd   chan struct{}
 	chStop chan struct{}
 	srv    *http.Server
-	sync.Mutex
 }
 
 type config struct {
@@ -72,7 +71,7 @@ func (srv *server) Run() error {
 	}()
 
 	if err := srv.srv.ListenAndServe(); err != http.ErrServerClosed {
-		log.Printf("HTTP server ListenAndServe: %v", err)
+		log.Fatal("HTTP server ListenAndServe: %v", err)
 		return err
 	}
 
