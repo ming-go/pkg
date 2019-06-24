@@ -1,12 +1,22 @@
 package snowflake
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSnowFlake(t *testing.T) {
-	s, _ := New(1, 1)
-	fmt.Println(s.NextId())
-	fmt.Println(s.NextBase62Id())
+}
+
+func TestSnowFlakeRetrievalWorkerId(t *testing.T) {
+	s, _ := New(27, 27)
+	id, _ := s.NextId()
+	assert.Equal(t, int64(27), s.RetrievalWorkerId(id))
+}
+
+func TestSnowFlakeRetrievalDatacenterId(t *testing.T) {
+	s, _ := New(27, 27)
+	id, _ := s.NextId()
+	assert.Equal(t, int64(27), s.RetrievalDatacenterId(id))
 }
