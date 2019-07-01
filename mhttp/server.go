@@ -75,6 +75,9 @@ func (srv *server) Run() error {
 		log.Fatal("HTTP server Listen: %v", err)
 		return err
 	}
+
+	log.Println("http server started on: ", listener.Addr())
+
 	if err := srv.srv.Serve(listener); err != http.ErrServerClosed {
 		log.Fatal("HTTP server Serve: %v", err)
 		return err
