@@ -70,8 +70,13 @@ func (srv *server) Run() error {
 		}
 	}()
 
-	if err := srv.srv.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatal("HTTP server ListenAndServe: %v", err)
+	listener, err := net.Listen("tcp", srv.srv.Addr)
+	if err != nil {
+		log.Fatal("HTTP server Listen: %v", err)
+		return err
+	}
+	if err := srv.srv.Serve(listener); err != http.ErrServerClosed {
+		log.Fatal("HTTP server Serve: %v", err)
 		return err
 	}
 
