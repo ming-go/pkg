@@ -1,12 +1,13 @@
-package mredis
+package mredigo
 
 import (
-	"github.com/gomodule/redigo/redis"
-	errors "golang.org/x/xerrors"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
+	errors "golang.org/x/xerrors"
 )
 
 var (
