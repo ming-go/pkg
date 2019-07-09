@@ -82,7 +82,16 @@ func Connect(key string) (redis.Conn, error) {
 	return conn, err
 }
 
-func CreatePool(key string, override bool, config *config) error {
+func GetPool(key string) (*redis.Pool, error) {
+	v, ok := poolStore.Load(key)
+	if !ok {
+		return nil, errors.New("key is not exists")
+	}
+
+	return v.(*redis.Pool), nil
+}
+
+func CreatePool(key string, override bool, config *config) (*redis.Pool, error) {
 	if _, ok := poolStore.Load(key); !ok && !override {
 		return errors.New("key is exists")
 	}
@@ -92,7 +101,7 @@ func CreatePool(key string, override bool, config *config) error {
 	conn := p.Get()
 	_, err := conn.Do("PING")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	conn.Close()
 
@@ -100,5 +109,5 @@ func CreatePool(key string, override bool, config *config) error {
 		poolStore.Store(key, p)
 	}
 
-	return nil
+	return p, nil
 }
