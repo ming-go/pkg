@@ -93,7 +93,7 @@ func GetPool(key string) (*redis.Pool, error) {
 
 func CreatePool(key string, override bool, config *config) (*redis.Pool, error) {
 	if _, ok := poolStore.Load(key); !ok && !override {
-		return errors.New("key is exists")
+		return nil, errors.New("key is exists")
 	}
 
 	p := newPool(config)
