@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/gogo/protobuf v1.2.1
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/hashicorp/consul/api v1.1.0
 	github.com/spf13/cast v1.3.0
 	github.com/stretchr/testify v1.3.0
