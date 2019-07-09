@@ -20,7 +20,7 @@ type RedisLeakyBucketImplConfig struct {
 	Period time.Duration
 }
 
-func NewRedisLeakyBucketImpl(cfg RedisLeakyBucketImplConfig) *redisLeakyBucketImpl {
+func NewRedisLeakyBucketImpl(cfg *RedisLeakyBucketImplConfig) *redisLeakyBucketImpl {
 	return &redisLeakyBucketImpl{
 		rPool:  cfg.RPool,
 		limit:  cfg.Limit,
