@@ -38,32 +38,32 @@ const (
 	`
 )
 
-func (this *RedisLeakyBucketImpl) Take(token string) error {
+func (this *redisLeakyBucketImpl) Take(token string) error {
 	redisConn := this.rPool.Get()
 	defer redisConn.Close()
 
-	_, err := conn.Do("PING")
+	_, err := redisConn.Do("PING")
 	if err != nil {
 		return err
 	}
 
 	luaScript := redis.NewScript(2, lua_script_leaky_bucket)
-	current, err := redis.Int(luaScript.Do(redisConn, token, strconv.Itoa(this.period/time.Millisecond)))
+	current, err := redis.Int(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
 	if err != nil {
 		return err
 	}
 
-	if current > rl.limit {
+	if current > this.limit {
 		return errors.New("API rate limit exceeded")
 	}
 
 	return nil
 }
 
-func (this *RedisLeakyBucketImpl) GetLimit() int {
+func (this *redisLeakyBucketImpl) GetLimit() int {
 	return this.limit
 }
 
-func (this *RedisLeakyBucketImpl) GetPeriod() time.Duration {
+func (this *redisLeakyBucketImpl) GetPeriod() time.Duration {
 	return this.period
 }
