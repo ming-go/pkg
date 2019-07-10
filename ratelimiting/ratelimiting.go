@@ -2,8 +2,13 @@ package ratelimiting
 
 import "time"
 
+type Result struct {
+	Consumed int
+	PTTL     int
+}
+
 type RateLimitingInf interface {
-	Take(string) error
+	Take(string) (*Result, error)
 	GetLimit() int
 	GetPeriod() time.Duration
 }

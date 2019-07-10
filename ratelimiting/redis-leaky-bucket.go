@@ -2,7 +2,6 @@ package ratelimiting
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"time"
 
@@ -40,27 +39,31 @@ const (
 	`
 )
 
-func (this *redisLeakyBucketImpl) Take(token string) error {
+func (this *redisLeakyBucketImpl) Take(token string) (*Result, error) {
 	redisConn := this.rPool.Get()
 	defer redisConn.Close()
 
 	_, err := redisConn.Do("PING")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	luaScript := redis.NewScript(2, lua_script_leaky_bucket)
-	log.Println(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
-	current, err := redis.Int(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
+	ret, err := redis.Ints(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if current > this.limit {
-		return errors.New("API rate limit exceeded")
+	res := &Result{
+		Consumed: ret[0],
+		PTTL:     ret[1],
 	}
 
-	return nil
+	if ret[0] > this.limit {
+		return res, errors.New("API rate limit exceeded")
+	}
+
+	return res, nil
 }
 
 func (this *redisLeakyBucketImpl) GetLimit() int {
