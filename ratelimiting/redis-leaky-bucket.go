@@ -30,11 +30,12 @@ func NewRedisLeakyBucketImpl(cfg *RedisLeakyBucketImplConfig) *redisLeakyBucketI
 
 const (
 	lua_script_leaky_bucket = `
-		local ret = redis.call("INCRBY", KEYS[1], "1")
-		if ret == 1 then
+		local current = redis.call("INCRBY", KEYS[1], "1")
+		if current == 1 then
 			redis.call("PEXPIRE", KEYS[1], KEYS[2])
 		end
-		return ret
+		local pttl = redis.call("PTTL", KEYS[1])
+		return current, pttl
 	`
 )
 
