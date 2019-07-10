@@ -35,7 +35,7 @@ const (
 			redis.call("PEXPIRE", KEYS[1], KEYS[2])
 		end
 		local pttl = redis.call("PTTL", KEYS[1])
-		return current, pttl
+		return {current, pttl}
 	`
 )
 
