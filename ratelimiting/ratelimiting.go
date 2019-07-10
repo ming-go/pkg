@@ -3,8 +3,8 @@ package ratelimiting
 import "time"
 
 type Result struct {
-	Consumed int
-	PTTL     int
+	Remaining int
+	Reset     int64
 }
 
 type RateLimitingInf interface {

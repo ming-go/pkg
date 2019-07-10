@@ -55,8 +55,12 @@ func (this *redisLeakyBucketImpl) Take(token string) (*Result, error) {
 	}
 
 	res := &Result{
-		Consumed: ret[0],
-		PTTL:     ret[1],
+		Remaining: this.limit - ret[0],
+		Reset:     (((time.Now().UnixNano() / 1e6) + int64(ret[1])) / 1000.0),
+	}
+
+	if res.Remaining < 0 {
+		res.Remaining = 0
 	}
 
 	if ret[0] > this.limit {
