@@ -2,6 +2,7 @@ package ratelimiting
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"time"
 
@@ -49,6 +50,7 @@ func (this *redisLeakyBucketImpl) Take(token string) error {
 	}
 
 	luaScript := redis.NewScript(2, lua_script_leaky_bucket)
+	log.Println(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
 	current, err := redis.Int(luaScript.Do(redisConn, token, strconv.Itoa(int(this.period)/int(time.Millisecond))))
 	if err != nil {
 		return err
