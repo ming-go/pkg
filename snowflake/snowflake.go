@@ -17,7 +17,7 @@ import (
 	"github.com/ming-go/pkg/mtime"
 )
 
-type snowflake struct {
+type Snowflake struct {
 	sync.Mutex
 	datacenterId  int64
 	workerId      int64
@@ -43,7 +43,7 @@ const BIT_BETWEEN_21_TO_17 = 0x3E0000 // DataCenter ID
 const BIT_BETWEEN_16_TO_12 = 0x1F000  // Process ID
 const BIT_BETWEEN_11_TO_0 = 0xFFF     // Increment
 
-func New(workerId int64, datacenterId int64) (*snowflake, error) {
+func New(workerId int64, datacenterId int64) (*Snowflake, error) {
 	if workerId > maxWorkerId || workerId < 0 {
 		return nil, errors.New(fmt.Sprintf("worker Id can't be greater than %d or less than 0", maxWorkerId))
 	}
@@ -52,13 +52,13 @@ func New(workerId int64, datacenterId int64) (*snowflake, error) {
 		return nil, errors.New(fmt.Sprintf("datacenter Id can't be greater than %d or less than 0", maxDatacenterId))
 	}
 
-	return &snowflake{
+	return &Snowflake{
 		datacenterId: datacenterId,
 		workerId:     workerId,
 	}, nil
 }
 
-func (sf *snowflake) NextId() (int64, error) {
+func (sf *Snowflake) NextId() (int64, error) {
 	timestamp := sf.timeGen()
 	sf.Lock()
 	defer sf.Unlock()
@@ -82,7 +82,7 @@ func (sf *snowflake) NextId() (int64, error) {
 		sf.sequence, nil
 }
 
-func (sf *snowflake) NextBase62Id() (string, error) {
+func (sf *Snowflake) NextBase62Id() (string, error) {
 	id, err := sf.NextId()
 	if err != nil {
 		return "", err
@@ -91,23 +91,23 @@ func (sf *snowflake) NextBase62Id() (string, error) {
 	return big.NewInt(id).Text(62), nil
 }
 
-func (sf *snowflake) RetrievalTimestamp(id int64) int64 {
+func (sf *Snowflake) RetrievalTimestamp(id int64) int64 {
 	return (id >> timestampLeftShift) + epoch
 }
 
-func (sf *snowflake) RetrievalDatacenterId(id int64) int64 {
+func (sf *Snowflake) RetrievalDatacenterId(id int64) int64 {
 	return (id & BIT_BETWEEN_21_TO_17) >> datacenterIdShift
 }
 
-func (sf *snowflake) RetrievalWorkerId(id int64) int64 {
+func (sf *Snowflake) RetrievalWorkerId(id int64) int64 {
 	return (id & BIT_BETWEEN_16_TO_12) >> workerIdShift
 }
 
-func (sf *snowflake) RetrievalSequence(id int64) int64 {
+func (sf *Snowflake) RetrievalSequence(id int64) int64 {
 	return id & BIT_BETWEEN_11_TO_0
 }
 
-func (sf *snowflake) nextMillis() int64 {
+func (sf *Snowflake) nextMillis() int64 {
 	timestamp := sf.timeGen()
 	for timestamp < sf.lastTimestamp {
 		timestamp = sf.timeGen()
@@ -116,6 +116,6 @@ func (sf *snowflake) nextMillis() int64 {
 	return timestamp
 }
 
-func (sf *snowflake) timeGen() int64 {
+func (sf *Snowflake) timeGen() int64 {
 	return mtime.UnixMilli(time.Now())
 }
