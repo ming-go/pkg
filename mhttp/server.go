@@ -72,14 +72,14 @@ func (srv *server) Run() error {
 
 	listener, err := net.Listen("tcp", srv.srv.Addr)
 	if err != nil {
-		log.Fatal("HTTP server Listen: %v", err)
+		log.Fatal("HTTP server Listen: %w", err)
 		return err
 	}
 
 	log.Println("http server started on: ", listener.Addr())
 
 	if err := srv.srv.Serve(listener); err != http.ErrServerClosed {
-		log.Fatal("HTTP server Serve: %v", err)
+		log.Fatal("HTTP server Serve: %w", err)
 		return err
 	}
 
