@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-type client struct {
+type Client struct {
 	hC *http.Client
 }
 
@@ -16,8 +16,8 @@ type Response struct {
 	RespBody []byte
 }
 
-func NewClient() *client {
-	return &client{
+func NewClient() *Client {
+	return &Client{
 		hC: &http.Client{},
 	}
 }
@@ -44,7 +44,7 @@ func HttpResponseToMHttpResponse(resp *http.Response, doErr error) (*Response, e
 	}, nil
 }
 
-func (c *client) GetWithContext(ctx context.Context, url string, httpHeader http.Header, urlValues url.Values) (*http.Response, error) {
+func (c *Client) GetWithContext(ctx context.Context, url string, httpHeader http.Header, urlValues url.Values) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
