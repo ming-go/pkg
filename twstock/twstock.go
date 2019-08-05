@@ -1,5 +1,17 @@
 package twstock
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/ming-go/pkg/mhttp"
+	"github.com/ming-go/pkg/mstring"
+	"github.com/ming-go/pkg/mtime"
+)
+
 type TwStock struct {
 	MsgArray []struct {
 		Ts    string `json:"ts"`
@@ -59,8 +71,48 @@ type TwStock struct {
 }
 
 type Client struct {
-	mhttp.client
+	mhc mhttp.Client
 }
 
-func getStockInfo(stockCode int) {
+var mhc *mhttp.Client = mhttp.NewClient()
+
+const urlGetStockInfo string = "https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=%s&_=%d"
+
+func joinStockCodes(stockCodes ...string) string {
+	buf := make([]byte, 0, len(stockCodes)*(4+7)+(len(stockCodes)-1))
+
+	flag := false
+
+	for _, stockCode := range stockCodes {
+		if !flag {
+			flag = true
+		} else {
+			buf = append(buf, '|')
+		}
+
+		buf = append(buf, "tse_"...)
+		buf = append(buf, stockCode...)
+		buf = append(buf, ".tw"...)
+	}
+
+	return mstring.BytesToString(buf)
+}
+
+func getStockInfo(ctx context.Context, stockTime time.Time, stockCodes ...string) (*TwStock, error) {
+	url := fmt.Sprintf(urlGetStockInfo, joinStockCodes(stockCodes...), mtime.UnixMilli(stockTime)) // TODO, func
+	log.Println(url)
+	mr, err := mhttp.HttpResponseToMHttpResponse(
+		mhc.GetWithContext(ctx, url, nil, nil),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	twStock := TwStock{}
+	err = json.Unmarshal(mr.RespBody, &twStock)
+	if err != nil {
+		return nil, err
+	}
+
+	return &twStock, nil
 }
