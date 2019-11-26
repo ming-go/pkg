@@ -3,6 +3,7 @@ module github.com/ming-go/pkg
 go 1.12
 
 require (
+	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/gogo/protobuf v1.2.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/hashicorp/consul/api v1.1.0

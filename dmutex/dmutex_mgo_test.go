@@ -1,42 +1,59 @@
 package dmutex
 
 import (
+	"log"
+	"os"
 	"strconv"
 	"testing"
 	"time"
 
-	"git.cchntek.com/CypressModule/dbpool"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/stretchr/testify/assert"
 	errors "golang.org/x/xerrors"
 )
 
-const (
-	TestDatabase   = "transaction"
-	TestCollection = "mtcode.lock"
-	TestConnName   = "test-dmutex-mgo"
+var (
+	TestDatabase   = os.Getenv("DMUTEX_MGO_DATABASE")
+	TestCollection = os.Getenv("DMUTEX_MGO_COLLECTION")
+	TestHost       = os.Getenv("DMUTEX_MGO_ADDRS")
+	TestUserName   = os.Getenv("DMUTEX_MGO_USERNAME")
+	TestPassword   = os.Getenv("DMUTEX_MGO_PASSWORD")
 )
 
-func loadTest() error {
-	config := dbpool.Config{
-		ConnName: TestConnName,
-	}
-	config.Host = "localhost:27017"
-	config.UserName = "mongoDBUsername"
-	config.Password = "mongoDBPassword"
-	config.DBName = "admin"
+var session *mgo.Session
 
-	return dbpool.GetPool().NewDB(dbpool.Mgo, config)
+func init() {
+	var err error
+	session, err = mgo.DialWithInfo(
+		&mgo.DialInfo{
+			Addrs:    []string{TestHost},
+			Database: TestDatabase,
+			Username: TestUserName,
+			Password: TestPassword,
+		},
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadTest() {
+	session = session.Copy()
+	defer session.Close()
+	err := session.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func TestEnsureMongoDBMutexIndex(t *testing.T) {
 	loadTest()
-	session, err := dbpool.GetPool().GetMgoDB(TestConnName)
+	session := session.Copy()
 	defer session.Close()
-	assert.NoError(t, err)
 
-	err = EnsureMongoDBMutexIndex(nil, "", "", time.Second)
+	err := EnsureMongoDBMutexIndex(nil, "", "", time.Second)
 	assert.True(t, errors.Is(ErrParamsIsNil, err))
 
 	c := session.DB(TestDatabase).C(TestCollection)
@@ -87,9 +104,8 @@ func TestMutexMongoDBImplIsLockerImplements(t *testing.T) {
 
 func TestMutexMongoDBImplWrongLockCase(t *testing.T) {
 	loadTest()
-	session, err := dbpool.GetPool().GetMgoDB(TestConnName)
+	session := session.Copy()
 	defer session.Close()
-	assert.NoError(t, err)
 
 	c := session.DB(TestDatabase).C(TestCollection)
 	testKey := "test-key-" + strconv.FormatInt(time.Now().UnixNano(), 10)
@@ -124,9 +140,8 @@ func TestMutexMongoDBImplWrongLockCase(t *testing.T) {
 
 func TestMutexMongoDBImpl(t *testing.T) {
 	loadTest()
-	session, err := dbpool.GetPool().GetMgoDB(TestConnName)
+	session := session.Copy()
 	defer session.Close()
-	assert.NoError(t, err)
 
 	c := session.DB(TestDatabase).C(TestCollection)
 	testKey := "test-key-" + strconv.FormatInt(time.Now().UnixNano(), 10)
