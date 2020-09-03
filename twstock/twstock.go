@@ -99,7 +99,7 @@ func joinStockCodes(stockCodes ...string) string {
 }
 
 func GetStockInfo(ctx context.Context, stockTime time.Time, stockCodes ...string) (*TwStock, error) {
-	url := fmt.Sprintf(urlGetStockInfo, joinStockCodes(stockCodes...), mtime.UnixMilli(stockTime)) // TODO, func
+	url := fmt.Sprintf(urlGetStockInfo, joinStockCodes(stockCodes...), mtime.New(stockTime).UnixMilli()) // TODO, func
 	log.Println(url)
 	mr, err := mhttp.HttpResponseToMHttpResponse(
 		mhc.GetWithContext(ctx, url, nil, nil),
