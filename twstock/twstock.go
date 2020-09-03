@@ -98,7 +98,7 @@ func joinStockCodes(stockCodes ...string) string {
 	return mstring.BytesToString(buf)
 }
 
-func getStockInfo(ctx context.Context, stockTime time.Time, stockCodes ...string) (*TwStock, error) {
+func GetStockInfo(ctx context.Context, stockTime time.Time, stockCodes ...string) (*TwStock, error) {
 	url := fmt.Sprintf(urlGetStockInfo, joinStockCodes(stockCodes...), mtime.UnixMilli(stockTime)) // TODO, func
 	log.Println(url)
 	mr, err := mhttp.HttpResponseToMHttpResponse(
