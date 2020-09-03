@@ -16,7 +16,7 @@ func TestJoinStockCodes(t *testing.T) {
 }
 
 func TestGetStockInfo(t *testing.T) {
-	twStock, err := getStockInfo(context.Background(), time.Now(), "2330", "3008", "2498")
+	twStock, err := GetStockInfo(context.Background(), time.Now(), "2330", "3008", "2498")
 	if err != nil {
 		log.Println(err)
 	}
